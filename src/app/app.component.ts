@@ -1,12 +1,16 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  standalone: true,
+  imports: [RouterOutlet, NavbarComponent],
+  template: `
+    <app-navbar />
+    <main class="min-h-screen bg-gray-50">
+      <router-outlet />
+    </main>
+  `
 })
-export class AppComponent {
-  title = 'ecommerce-client';
-}
+export class AppComponent {}

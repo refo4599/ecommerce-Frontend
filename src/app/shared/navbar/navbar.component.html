@@ -1,0 +1,78 @@
+<nav class="bg-white shadow-md px-6 py-4 flex items-center justify-between">
+
+  <!-- Logo -->
+  <a routerLink="/home" class="text-xl font-bold text-blue-600">
+    🛒 ECommerce
+  </a>
+
+  <!-- Links -->
+  <div class="flex items-center gap-6">
+
+    <ng-container *ngIf="currentUser; else guestLinks">
+
+      <!-- Customer Links -->
+      <ng-container *ngIf="!isAdmin()">
+        <a routerLink="/home"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          الرئيسية
+        </a>
+        <a routerLink="/cart"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          🛒 السلة
+        </a>
+        <a routerLink="/orders"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          طلباتي
+        </a>
+      </ng-container>
+
+      <!-- Admin Links -->
+      <ng-container *ngIf="isAdmin()">
+        <a routerLink="/admin/dashboard"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          Dashboard
+        </a>
+        <a routerLink="/admin/products"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          المنتجات
+        </a>
+        <a routerLink="/admin/branches"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          الفروع
+        </a>
+        <a routerLink="/admin/orders"
+           class="text-gray-600 hover:text-blue-600 font-medium">
+          الطلبات
+        </a>
+      </ng-container>
+
+      <!-- User Info + Logout -->
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-500">
+          {{ currentUser.name }}
+        </span>
+        <button
+          (click)="logout()"
+          class="bg-red-500 text-white px-4 py-1.5 rounded-lg
+                 hover:bg-red-600 text-sm font-medium">
+          خروج
+        </button>
+      </div>
+
+    </ng-container>
+
+    <!-- Guest Links -->
+    <ng-template #guestLinks>
+      <a routerLink="/login"
+         class="text-gray-600 hover:text-blue-600 font-medium">
+        دخول
+      </a>
+      <a routerLink="/register"
+         class="bg-blue-600 text-white px-4 py-1.5 rounded-lg
+                hover:bg-blue-700 text-sm font-medium">
+        تسجيل
+      </a>
+    </ng-template>
+
+  </div>
+</nav>

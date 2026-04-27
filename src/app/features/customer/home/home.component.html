@@ -1,0 +1,86 @@
+<div class="min-h-screen bg-gray-50" dir="rtl">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center h-64">
+    <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+
+  <div *ngIf="!loading">
+
+    <!-- Branch Selector -->
+    <div class="bg-white shadow-sm sticky top-0 z-10">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex gap-3 overflow-x-auto">
+        <button
+          *ngFor="let branch of branches"
+          (click)="selectBranch(branch)"
+          [class.bg-blue-600]="selectedBranch?.id === branch.id"
+          [class.text-white]="selectedBranch?.id === branch.id"
+          [class.bg-gray-100]="selectedBranch?.id !== branch.id"
+          [class.text-gray-700]="selectedBranch?.id !== branch.id"
+          class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">
+          {{ branch.nameAr }}
+          <span *ngIf="branch.isDefault" class="mr-1 text-xs opacity-75">(رئيسي)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+
+      <h2 class="text-xl font-bold text-gray-800 mb-4">
+        منتجات {{ selectedBranch?.nameAr }}
+      </h2>
+
+      <!-- Products Loading -->
+      <div *ngIf="productsLoading" class="flex justify-center py-12">
+        <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
+      <!-- Products Grid -->
+      <div *ngIf="!productsLoading"
+           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+        <div *ngFor="let product of products"
+             class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+
+          <!-- Image -->
+          <div class="h-40 bg-gray-100 flex items-center justify-center">
+            <img *ngIf="product.imageUrl"
+                 [src]="product.imageUrl"
+                 [alt]="product.name"
+                 class="h-full w-full object-cover"/>
+            <span *ngIf="!product.imageUrl" class="text-4xl">🛍️</span>
+          </div>
+
+          <!-- Info -->
+          <div class="p-3">
+            <h3 class="font-semibold text-gray-800 text-sm">{{ product.nameAr }}</h3>
+            <p class="text-blue-600 font-bold mt-1">{{ product.effectivePrice }} ج.م</p>
+
+            <!-- Stock -->
+            <p class="text-xs mt-1"
+               [class.text-green-600]="product.stock > 5"
+               [class.text-orange-500]="product.stock > 0 && product.stock <= 5"
+               [class.text-red-500]="product.stock === 0">
+              {{ product.stock > 0 ? 'متاح (' + product.stock + ')' : 'نفذ' }}
+            </p>
+
+            <button
+              (click)="addToCart(product)"
+              [disabled]="product.stock === 0"
+              class="w-full mt-2 bg-blue-600 text-white py-1.5 rounded-lg text-sm
+                     hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              أضف للكارت
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="products.length === 0"
+             class="col-span-full text-center py-12 text-gray-400">
+          مفيش منتجات في الفرع ده
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
