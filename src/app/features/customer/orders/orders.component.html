@@ -1,1 +1,87 @@
-<p>orders works!</p>
+<div class="min-h-screen bg-gray-50" dir="rtl">
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-100 sticky top-0 z-10">
+    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
+      <button (click)="goBack()"
+              class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+      <h1 class="text-lg font-bold text-gray-900">طلباتي</h1>
+    </div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-24 gap-3">
+      <div class="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-sm text-gray-400">جاري تحميل الطلبات...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage && !loading"
+         class="bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-2xl text-sm text-center">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!loading && !errorMessage && orders.length === 0"
+         class="flex flex-col items-center justify-center py-24 gap-3">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-2xl">📦</div>
+      <p class="text-gray-500 font-medium">مفيش طلبات لحد دلوقتي</p>
+      <button (click)="goBack()"
+              class="mt-2 px-5 py-2.5 bg-gray-900 text-white text-sm rounded-xl hover:bg-gray-800 transition-colors">
+        ابدأ التسوق
+      </button>
+    </div>
+
+    <!-- Orders List -->
+    <div *ngIf="!loading && orders.length > 0" class="flex flex-col gap-4">
+      <div *ngFor="let order of orders"
+           class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+
+        <!-- Order Header -->
+        <div class="px-4 py-3 flex items-center justify-between border-b border-gray-50">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-xs text-gray-400">طلب رقم #{{ order.id }}</span>
+            <span class="text-xs text-gray-400">{{ formatDate(order.createdAt) }}</span>
+          </div>
+          <span class="text-xs font-medium px-3 py-1 rounded-full border {{ getStatusColor(order.status) }}">
+            {{ getStatusLabel(order.status) }}
+          </span>
+        </div>
+
+        <!-- Branch -->
+        <div class="px-4 py-2 bg-gray-50 flex items-center gap-2">
+          <span class="text-xs text-gray-400">الفرع:</span>
+          <span class="text-xs font-medium text-gray-700">{{ order.branchName }}</span>
+        </div>
+
+        <!-- Items -->
+        <div class="px-4 py-3 flex flex-col gap-2">
+          <div *ngFor="let item of order.items"
+               class="flex items-center justify-between text-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs text-gray-500">
+                {{ item.quantity }}
+              </span>
+              <span class="text-gray-700">{{ item.productName }}</span>
+            </div>
+            <span class="text-gray-500 text-xs">{{ item.unitPrice * item.quantity | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <!-- Total -->
+        <div class="px-4 py-3 border-t border-gray-50 flex items-center justify-between">
+          <span class="text-sm text-gray-500">الإجمالي</span>
+          <span class="text-sm font-bold text-gray-900">{{ order.totalAmount | number:'1.2-2' }} ج.م</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

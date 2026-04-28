@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BranchService } from '../../../core/services/branch.service';
 import { ProductService } from '../../../core/services/product.service';
 import { CategoryService, Category } from '../../../core/services/category.service';
@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { Branch } from '../../../core/models/branch.model';
 import { BranchProduct } from '../../../core/models/product.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -21,12 +22,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedBranch: Branch | null = null;
   products: BranchProduct[] = [];
   categories: Category[] = [];
-  selectedCategoryId: number | null = null;
   loading = true;
   productsLoading = false;
   cartCount = 0;
   addedProductId: number | null = null;
   errorMessage: string | null = null;
+  private routeSub!: Subscription;
 
   constructor(
     private branchService: BranchService,
@@ -35,21 +36,26 @@ export class HomeComponent implements OnInit, OnDestroy {
     private signalrService: SignalrService,
     private authService: AuthService,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    this.loadBranches();
     this.loadCategories();
     this.startSignalR();
-  }
 
-  loadBranches() {
     this.branchService.getAll().subscribe(res => {
       this.branches = res.data;
-      const def = this.branches.find(b => b.isDefault) ?? this.branches[0];
-      if (def) this.selectBranch(def);
       this.loading = false;
+
+      this.routeSub = this.route.queryParams.subscribe(params => {
+        const branchId = params['branchId'] ? +params['branchId'] : null;
+        const target = branchId
+          ? (this.branches.find(b => b.id === branchId) ?? this.branches[0])
+          : this.branches[0];
+
+        if (target) this.selectBranch(target);
+      });
     });
   }
 
@@ -65,39 +71,29 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.signalrService.leaveBranch(this.selectedBranch.id);
     }
     this.selectedBranch = branch;
-    this.selectedCategoryId = null;
     this.signalrService.joinBranch(branch.id);
     this.loadProducts(branch.id);
   }
 
-selectCategory(categoryId: number | null) {
-  if (!this.selectedBranch) return;
-  if (categoryId === null) {
-    this.router.navigate(['/products'], {
-      queryParams: { branchId: this.selectedBranch.id }
-    });
-  } else {
-    this.router.navigate(['/products'], {
-      queryParams: { branchId: this.selectedBranch.id, categoryId }
-    });
+  selectCategory(categoryId: number | null) {
+    if (!this.selectedBranch) return;
+    if (categoryId === null) {
+      this.router.navigate(['/products'], {
+        queryParams: { branchId: this.selectedBranch.id }
+      });
+    } else {
+      this.router.navigate(['/products'], {
+        queryParams: { branchId: this.selectedBranch.id, categoryId }
+      });
+    }
   }
-}
+
   loadProducts(branchId: number) {
     this.productsLoading = true;
     this.productService.getByBranch(branchId).subscribe(res => {
       this.products = res.data;
       this.productsLoading = false;
     });
-  }
-
-  get filteredProducts(): BranchProduct[] {
-    if (!this.selectedCategoryId) return this.products;
-    return this.products.filter(p => p.category?.id === this.selectedCategoryId);
-  }
-
-  get selectedCategoryName(): string {
-    if (!this.selectedCategoryId) return '';
-    return this.categories.find(c => c.id === this.selectedCategoryId)?.nameAr ?? '';
   }
 
   startSignalR() {
@@ -128,9 +124,11 @@ selectCategory(categoryId: number | null) {
     if (!this.selectedBranch || product.stock === 0) return;
     this.errorMessage = null;
 
-    this.cartService.addItem(this.selectedBranch.id, product.id, 1).subscribe({
-      next: () => {
-        this.cartCount++;
+    const branchId = this.selectedBranch.id;
+
+    this.cartService.addItem(branchId, product.id, 1).subscribe({
+      next: (res) => {
+        this.cartCount = res.data?.items?.length ?? this.cartCount + 1;
         this.addedProductId = product.id;
         setTimeout(() => this.addedProductId = null, 1500);
       },
@@ -141,11 +139,11 @@ selectCategory(categoryId: number | null) {
             'عندك منتجات من فرع تاني في الكارت.\nهتبدأ كارت جديد وتحذف المنتجات القديمة؟'
           );
           if (confirmed) {
-            this.cartService.switchBranch(this.selectedBranch!.id).subscribe({
+            this.cartService.switchBranch(branchId).subscribe({
               next: () => {
-                this.cartService.addItem(this.selectedBranch!.id, product.id, 1).subscribe({
-                  next: () => {
-                    this.cartCount = 1;
+                this.cartService.addItem(branchId, product.id, 1).subscribe({
+                  next: (res) => {
+                    this.cartCount = res.data?.items?.length ?? 1;
                     this.addedProductId = product.id;
                     setTimeout(() => this.addedProductId = null, 1500);
                   }
@@ -175,5 +173,6 @@ selectCategory(categoryId: number | null) {
       this.signalrService.leaveBranch(this.selectedBranch.id);
     }
     this.signalrService.stopConnection();
+    this.routeSub?.unsubscribe();
   }
 }

@@ -1,8 +1,10 @@
 export interface OrderItem {
   productId: number;
   productName: string;
-  price: number;
+  imageUrl: string;
+  unitPrice: number;
   quantity: number;
+  subtotal: number;
 }
 
 export interface Order {
@@ -10,7 +12,8 @@ export interface Order {
   branchId: number;
   branchName: string;
   status: string;
-  total: number;
+  totalAmount: number;
+  notes: string | null;
   createdAt: string;
   items: OrderItem[];
 }

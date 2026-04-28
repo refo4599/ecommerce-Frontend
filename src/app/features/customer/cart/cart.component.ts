@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { Cart, CartItem } from '../../../core/models/cart.model';
 import { HttpClient } from '@angular/common/http';
@@ -22,7 +22,8 @@ export class CartComponent implements OnInit {
   constructor(
     private cartService: CartService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -30,20 +31,36 @@ export class CartComponent implements OnInit {
   }
 
   loadCart() {
-    this.http.get<{ success: boolean, data: any[] }>
-      (`${environment.apiUrl}/branches`).subscribe(res => {
-      const branches = res.data;
-      const defaultBranch = branches.find((b: any) => b.isDefault) ?? branches[0];
-      if (!defaultBranch) { this.loading = false; return; }
+    // اقرأ الـ branchId من الـ URL الأول
+    const branchIdParam = this.route.snapshot.queryParamMap.get('branchId');
 
-      this.cartService.getCart(defaultBranch.id).subscribe({
+    if (branchIdParam) {
+      // لو موجود في الـ URL استخدمه مباشرة
+      this.cartService.getCart(+branchIdParam).subscribe({
         next: res => {
           this.cart = res.data;
           this.loading = false;
         },
         error: () => { this.loading = false; }
       });
-    });
+    } else {
+      // fallback — جيب الفرع الأول من الـ API
+      this.http.get<{ success: boolean, data: any[] }>(
+        `${environment.apiUrl}/branches`
+      ).subscribe(res => {
+        const branches = res.data;
+        const defaultBranch = branches.find((b: any) => b.isDefault) ?? branches[0];
+        if (!defaultBranch) { this.loading = false; return; }
+
+        this.cartService.getCart(defaultBranch.id).subscribe({
+          next: res => {
+            this.cart = res.data;
+            this.loading = false;
+          },
+          error: () => { this.loading = false; }
+        });
+      });
+    }
   }
 
   get totalQuantity(): number {
@@ -93,19 +110,19 @@ export class CartComponent implements OnInit {
     if (!this.cart || this.cart.items.length === 0) return;
     this.placingOrder = true;
 
-    this.http.post<{ success: boolean, data: any }>
-      (`${environment.apiUrl}/orders`, { branchId: this.cart.branchId })
-      .subscribe({
-        next: () => {
-          this.placingOrder = false;
-          this.showToast = true;
-          setTimeout(() => {
-            this.showToast = false;
-            this.router.navigate(['/home']);
-          }, 3000);
-        },
-        error: () => { this.placingOrder = false; }
-      });
+    this.http.post<{ success: boolean, data: any }>(
+      `${environment.apiUrl}/orders`, { branchId: this.cart.branchId }
+    ).subscribe({
+      next: () => {
+        this.placingOrder = false;
+        this.showToast = true;
+        setTimeout(() => {
+          this.showToast = false;
+          this.router.navigate(['/home']);
+        }, 3000);
+      },
+      error: () => { this.placingOrder = false; }
+    });
   }
 
   goBack() {
