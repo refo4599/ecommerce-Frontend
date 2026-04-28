@@ -38,7 +38,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.branchService.getAll().subscribe(res => {
       this.branches = res.data;
       const def = this.branches.find(b => b.isDefault) ?? this.branches[0];
-      this.selectBranch(def);
+      if (def) this.selectBranch(def);
       this.loading = false;
     });
   }
@@ -47,7 +47,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.selectedBranch) {
       this.signalrService.leaveBranch(this.selectedBranch.id);
     }
-
     this.selectedBranch = branch;
     this.signalrService.joinBranch(branch.id);
     this.loadProducts(branch.id);
@@ -71,17 +70,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     });
 
-    // تحديث الـ stock real-time
     this.signalrService.stockUpdated$.subscribe(data => {
       if (data.branchId === this.selectedBranch?.id) {
         const product = this.products.find(p => p.productId === data.productId);
-        if (product) {
-          product.stock = data.newStock;
-        }
+        if (product) product.stock = data.newStock;
       }
     });
 
-    // تحديث كل منتجات الفرع
     this.signalrService.branchProductsUpdated$.subscribe(data => {
       if (data.branchId === this.selectedBranch?.id) {
         this.loadProducts(data.branchId);
@@ -91,8 +86,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   addToCart(product: BranchProduct) {
     if (!this.selectedBranch) return;
-    this.cartService.addItem(this.selectedBranch.id, product.productId, 1)
-      .subscribe();
+    this.cartService.addItem(this.selectedBranch.id, product.productId, 1).subscribe();
   }
 
   ngOnDestroy() {

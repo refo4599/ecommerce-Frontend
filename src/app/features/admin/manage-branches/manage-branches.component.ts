@@ -18,9 +18,7 @@ export class ManageBranchesComponent implements OnInit {
 
   form = {
     name: '',
-    nameAr: '',
-    slug: '',
-    imageUrl: '',
+    location: '',
     isDefault: false
   };
 
@@ -40,7 +38,7 @@ export class ManageBranchesComponent implements OnInit {
 
   openAdd() {
     this.editingBranch = null;
-    this.form = { name: '', nameAr: '', slug: '', imageUrl: '', isDefault: false };
+    this.form = { name: '', location: '', isDefault: false };
     this.showForm = true;
   }
 
@@ -48,9 +46,7 @@ export class ManageBranchesComponent implements OnInit {
     this.editingBranch = branch;
     this.form = {
       name: branch.name,
-      nameAr: branch.nameAr,
-      slug: branch.slug ?? '',
-      imageUrl: branch.imageUrl ?? '',
+      location: branch.location,
       isDefault: branch.isDefault
     };
     this.showForm = true;

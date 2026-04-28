@@ -1,6 +1,6 @@
 export interface Category {
   id: number;
   name: string;
-  nameAr: string;
+  description?: string;
   imageUrl?: string;
 }

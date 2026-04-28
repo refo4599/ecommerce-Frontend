@@ -1,9 +1,7 @@
 export interface Branch {
   id: number;
   name: string;
-  nameAr: string;
-  slug?: string;
-  imageUrl?: string;
+  location: string;
   isDefault: boolean;
   isActive: boolean;
 }

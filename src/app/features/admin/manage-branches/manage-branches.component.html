@@ -23,23 +23,13 @@
 
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">الاسم بالإنجليزي</label>
+          <label class="block text-xs font-medium text-slate-500 mb-1">اسم الفرع</label>
           <input [(ngModel)]="form.name" type="text" placeholder="Stories"
                  class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"/>
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">الاسم بالعربي</label>
-          <input [(ngModel)]="form.nameAr" type="text" placeholder="ستوريز"
-                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"/>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">الـ Slug</label>
-          <input [(ngModel)]="form.slug" type="text" placeholder="stories"
-                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"/>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">رابط الصورة</label>
-          <input [(ngModel)]="form.imageUrl" type="text" placeholder="https://..."
+          <label class="block text-xs font-medium text-slate-500 mb-1">موقع الفرع</label>
+          <input [(ngModel)]="form.location" type="text" placeholder="القاهرة، مدينة نصر"
                  class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"/>
         </div>
         <div class="flex items-center gap-2">
@@ -75,7 +65,7 @@
         <tr>
           <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">#</th>
           <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">الاسم</th>
-          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">Slug</th>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">الموقع</th>
           <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">الحالة</th>
           <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">إجراءات</th>
         </tr>
@@ -83,11 +73,8 @@
       <tbody class="divide-y divide-slate-50">
         <tr *ngFor="let branch of branches" class="hover:bg-slate-50 transition-colors">
           <td class="px-5 py-3 text-slate-400">{{ branch.id }}</td>
-          <td class="px-5 py-3">
-            <p class="font-medium text-slate-700">{{ branch.nameAr }}</p>
-            <p class="text-xs text-slate-400">{{ branch.name }}</p>
-          </td>
-          <td class="px-5 py-3 text-slate-500">{{ branch.slug }}</td>
+          <td class="px-5 py-3 font-medium text-slate-700">{{ branch.name }}</td>
+          <td class="px-5 py-3 text-slate-500">{{ branch.location }}</td>
           <td class="px-5 py-3">
             <span *ngIf="branch.isDefault"
                   class="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full">رئيسي</span>

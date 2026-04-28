@@ -91,12 +91,12 @@ export const routes: Routes = [
           import('./features/admin/manage-branches/manage-branches.component')
             .then(m => m.ManageBranchesComponent)
       },
-      // {
-      //   path: 'categories',
-      //   loadComponent: () =>
-      //     import('./features/admin/manage-categories/manage-categories.component')
-      //       .then(m => m.ManageCategoriesComponent)
-      // },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/admin/manage-categories/manage-categories.component')
+            .then(m => m.ManageCategoriesComponent)
+      },
       {
         path: 'products',
         loadComponent: () =>

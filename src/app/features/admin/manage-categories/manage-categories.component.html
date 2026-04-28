@@ -1,0 +1,129 @@
+<div dir="rtl">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-bold text-slate-700">الكاتيجوريز</h1>
+      <p class="text-sm text-slate-400 mt-0.5">إدارة تصنيفات المنتجات</p>
+    </div>
+    <button (click)="openAdd()"
+            class="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-800 transition-all">
+      + إضافة كاتيجوري
+    </button>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showForm"
+       class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4" dir="rtl">
+
+      <h2 class="text-base font-bold text-slate-700 mb-5">
+        {{ editingCategory ? 'تعديل الكاتيجوري' : 'إضافة كاتيجوري جديدة' }}
+      </h2>
+
+      <div class="space-y-4">
+
+        <!-- Name -->
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">اسم الكاتيجوري</label>
+          <input [(ngModel)]="form.name" type="text" placeholder="أكل / Food"
+                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"/>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">
+            الوصف <span class="text-slate-300">(اختياري)</span>
+          </label>
+          <textarea [(ngModel)]="form.description" rows="2" placeholder="وصف مختصر..."
+                    class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"></textarea>
+        </div>
+
+        <!-- Image Upload -->
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">
+            صورة الكاتيجوري <span class="text-slate-300">(اختياري)</span>
+          </label>
+
+          <!-- Preview -->
+          <div *ngIf="previewUrl"
+               class="w-full h-32 rounded-lg overflow-hidden mb-2 border border-slate-100">
+            <img [src]="previewUrl" class="w-full h-full object-cover"/>
+          </div>
+
+          <!-- Upload Button -->
+          <label class="flex items-center gap-2 w-full border border-dashed border-slate-300
+                        rounded-lg px-3 py-3 text-sm text-slate-400 cursor-pointer
+                        hover:border-slate-400 hover:bg-slate-50 transition-all">
+            <span *ngIf="!uploading">📁 اختار صورة من جهازك</span>
+            <span *ngIf="uploading" class="flex items-center gap-2">
+              <span class="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin inline-block"></span>
+              جاري الرفع...
+            </span>
+            <input type="file" accept="image/*" class="hidden"
+                   (change)="onFileSelected($event)" [disabled]="uploading"/>
+          </label>
+        </div>
+
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button (click)="save()" [disabled]="uploading || !form.name"
+                class="flex-1 bg-slate-700 text-white py-2 rounded-lg text-sm hover:bg-slate-800 transition-all disabled:opacity-50">
+          {{ editingCategory ? 'حفظ التعديلات' : 'إضافة' }}
+        </button>
+        <button (click)="cancel()"
+                class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-200 transition-all">
+          إلغاء
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center py-16">
+    <div class="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+  </div>
+
+  <!-- Grid -->
+  <div *ngIf="!loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+    <div *ngFor="let category of categories"
+         class="bg-white border border-slate-100 rounded-xl overflow-hidden hover:border-slate-200 transition-all">
+
+      <!-- Image -->
+      <div class="h-28 bg-slate-50 flex items-center justify-center overflow-hidden">
+        <img *ngIf="category.imageUrl" [src]="category.imageUrl"
+             class="w-full h-full object-cover"/>
+        <span *ngIf="!category.imageUrl" class="text-3xl">📂</span>
+      </div>
+
+      <div class="p-3">
+        <p class="font-medium text-slate-700 text-sm">{{ category.name }}</p>
+        <p *ngIf="category.description"
+           class="text-xs text-slate-400 mt-0.5 line-clamp-1">{{ category.description }}</p>
+
+        <div class="flex gap-2 mt-3">
+          <button (click)="openEdit(category)"
+                  class="flex-1 text-xs text-slate-500 bg-slate-100 px-2 py-1.5 rounded-lg hover:bg-slate-200 transition-all">
+            تعديل
+          </button>
+          <button (click)="delete(category.id)"
+                  class="flex-1 text-xs text-red-400 bg-red-50 px-2 py-1.5 rounded-lg hover:bg-red-100 transition-all">
+            حذف
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="categories.length === 0"
+         class="col-span-full text-center py-16 text-slate-400 text-sm">
+      مفيش كاتيجوريز متضافة
+    </div>
+
+  </div>
+
+</div>
