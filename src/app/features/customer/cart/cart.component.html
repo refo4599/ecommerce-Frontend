@@ -1,1 +1,140 @@
-<p>cart works!</p>
+<div class="min-h-screen bg-gray-50" dir="rtl">
+
+  <!-- Toast Notification -->
+  <div *ngIf="showToast"
+       class="fixed top-5 left-1/2 -translate-x-1/2 z-50
+              flex items-center gap-3
+              bg-white border border-green-100 shadow-lg
+              px-5 py-3.5 rounded-2xl
+              animate-fade-in-down"
+       style="animation: slideDown 0.4s ease forwards;">
+    <div class="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center flex-shrink-0">
+      <span class="text-green-500 text-lg">✓</span>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-gray-800">تم تقديم الطلب بنجاح!</p>
+      <p class="text-xs text-gray-400 mt-0.5">جاري تحويلك للصفحة الرئيسية...</p>
+    </div>
+    <!-- Progress Bar -->
+    <div class="absolute bottom-0 left-0 h-0.5 bg-green-400 rounded-full"
+         style="animation: progress 3s linear forwards;">
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-100 sticky top-0 z-20">
+    <div class="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
+      <button (click)="goBack()"
+              class="text-gray-400 hover:text-gray-700 transition-colors text-lg">
+        ←
+      </button>
+      <h1 class="text-base font-bold text-gray-800">سلة التسوق</h1>
+      <span *ngIf="hasItems"
+            class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+        {{ cartItems.length }} منتج
+      </span>
+    </div>
+  </header>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center h-64">
+    <div class="w-8 h-8 border-2 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+  </div>
+
+  <div *ngIf="!loading" class="max-w-2xl mx-auto px-4 py-6">
+
+    <!-- Empty Cart -->
+    <div *ngIf="!hasItems" class="text-center py-20">
+      <p class="text-5xl mb-4">🛍️</p>
+      <p class="text-gray-500 font-medium mb-1">السلة فاضية</p>
+      <p class="text-gray-400 text-sm mb-6">أضف منتجات من الصفحة الرئيسية</p>
+      <button (click)="goBack()"
+              class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition-all">
+        تصفح المنتجات
+      </button>
+    </div>
+
+    <!-- Cart Items -->
+    <div *ngIf="hasItems">
+
+      <p class="text-xs text-gray-400 mb-4">
+        الفرع: <span class="font-medium text-gray-600">{{ cartBranchName }}</span>
+      </p>
+
+      <div class="space-y-3 mb-6">
+        <div *ngFor="let item of cartItems"
+             class="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-4">
+
+          <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+            <img *ngIf="item.imageUrl" [src]="item.imageUrl"
+                 class="w-full h-full object-cover"/>
+            <span *ngIf="!item.imageUrl" class="text-2xl">🛍️</span>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-gray-800 text-sm line-clamp-1">{{ item.productName }}</p>
+            <p class="text-gray-500 text-xs mt-0.5">{{ item.unitPrice }} ج.م للقطعة</p>
+            <p class="font-bold text-gray-900 text-sm mt-1">{{ item.subtotal }} ج.م</p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button (click)="updateQuantity(item, -1)"
+                    class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold transition-all text-sm">
+              −
+            </button>
+            <span class="w-6 text-center text-sm font-medium text-gray-800">
+              {{ item.quantity }}
+            </span>
+            <button (click)="updateQuantity(item, 1)"
+                    class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold transition-all text-sm">
+              +
+            </button>
+          </div>
+
+          <button (click)="removeItem(item)"
+                  class="text-gray-300 hover:text-red-400 transition-colors flex-shrink-0 text-lg">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+        <div class="flex justify-between text-sm text-gray-500 mb-2">
+          <span>عدد المنتجات</span>
+          <span>{{ cartItems.length }}</span>
+        </div>
+        <div class="flex justify-between text-sm text-gray-500 mb-3">
+          <span>إجمالي الكميات</span>
+          <span>{{ totalQuantity }}</span>
+        </div>
+        <div class="border-t border-gray-100 pt-3 flex justify-between">
+          <span class="font-bold text-gray-800">الإجمالي</span>
+          <span class="font-bold text-gray-900 text-lg">{{ cartTotal }} ج.م</span>
+        </div>
+      </div>
+
+      <button (click)="placeOrder()"
+              [disabled]="placingOrder"
+              class="w-full bg-gray-900 text-white py-3.5 rounded-xl text-sm font-bold
+                     hover:bg-gray-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+        <span *ngIf="!placingOrder">✓ تأكيد الطلب</span>
+        <span *ngIf="placingOrder" class="flex items-center justify-center gap-2">
+          <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block"></span>
+          جاري تقديم الطلب...
+        </span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes slideDown {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes progress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+</style>

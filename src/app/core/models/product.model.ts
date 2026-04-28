@@ -2,14 +2,20 @@ export interface Product {
   id: number;
   name: string;
   nameAr: string;
-  description: string;
-  price: number;
+  description?: string;
+  basePrice: number;
   imageUrl?: string;
-  categoryId: number;
-  categoryName: string;
+  isActive: boolean;
+  category?: {
+    id: number;
+    name: string;
+    nameAr: string;
+    imageUrl?: string;
+  };
 }
+
 export interface BranchProduct {
-  productId: number;
+  id: number;
   name: string;
   nameAr: string;
   description?: string;

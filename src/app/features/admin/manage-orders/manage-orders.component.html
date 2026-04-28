@@ -1,1 +1,139 @@
-<p>manage-orders works!</p>
+<div dir="rtl">
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-bold text-slate-700">الأوردرات</h1>
+      <p class="text-sm text-slate-400 mt-0.5">متابعة وإدارة طلبات العملاء</p>
+    </div>
+    <div class="text-sm text-slate-400 bg-white border border-slate-100 px-4 py-2 rounded-lg">
+      إجمالي: {{ total }} أوردر
+    </div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div *ngIf="selectedOrder"
+       class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 max-h-screen overflow-y-auto" dir="rtl">
+
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-base font-bold text-slate-700">تفاصيل الأوردر #{{ selectedOrder.id }}</h2>
+        <button (click)="closeDetails()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <div class="space-y-3 mb-5">
+        <div class="flex justify-between text-sm">
+          <span class="text-slate-400">الفرع</span>
+          <span class="text-slate-700 font-medium">{{ selectedOrder.branchName }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-slate-400">الحالة</span>
+          <span [class]="getStatusColor(selectedOrder.status) + ' text-xs px-2 py-0.5 rounded-full'">
+            {{ getStatusLabel(selectedOrder.status) }}
+          </span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-slate-400">التاريخ</span>
+          <span class="text-slate-700">{{ selectedOrder.createdAt | date:'d/M/y - h:mm a' }}</span>
+        </div>
+        <div *ngIf="selectedOrder.notes" class="flex justify-between text-sm">
+          <span class="text-slate-400">ملاحظات</span>
+          <span class="text-slate-700">{{ selectedOrder.notes }}</span>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="border border-slate-100 rounded-xl overflow-hidden mb-5">
+        <div class="bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500">المنتجات</div>
+        <div *ngFor="let item of selectedOrder.items"
+             class="flex items-center justify-between px-4 py-3 border-t border-slate-50">
+          <div>
+            <p class="text-sm font-medium text-slate-700">{{ item.productName }}</p>
+            <p class="text-xs text-slate-400">{{ item.quantity }} × {{ item.unitPrice }} ج.م</p>
+          </div>
+          <p class="text-sm font-bold text-slate-700">{{ item.subtotal }} ج.م</p>
+        </div>
+        <div class="flex justify-between px-4 py-3 border-t border-slate-100 bg-slate-50">
+          <span class="text-sm font-bold text-slate-700">الإجمالي</span>
+          <span class="text-sm font-bold text-slate-700">{{ selectedOrder.totalAmount }} ج.م</span>
+        </div>
+      </div>
+
+      <!-- Update Status -->
+      <div>
+        <p class="text-xs font-medium text-slate-500 mb-2">تغيير الحالة</p>
+        <div class="flex gap-2 flex-wrap">
+          <button *ngFor="let s of ['Confirmed','Processing','Completed','Cancelled']"
+                  (click)="updateStatus(selectedOrder!.id, s); closeDetails()"
+                  [disabled]="selectedOrder.status === s"
+                  class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            {{ getStatusLabel(s) }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center py-16">
+    <div class="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="bg-white border border-slate-100 rounded-xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 border-b border-slate-100">
+        <tr>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">#</th>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">الفرع</th>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">الإجمالي</th>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">الحالة</th>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">التاريخ</th>
+          <th class="text-right px-5 py-3 text-xs font-medium text-slate-500">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        <tr *ngFor="let order of orders" class="hover:bg-slate-50 transition-colors">
+          <td class="px-5 py-3 text-slate-400">{{ order.id }}</td>
+          <td class="px-5 py-3 font-medium text-slate-700">{{ order.branchName }}</td>
+          <td class="px-5 py-3 font-medium text-slate-700">{{ order.totalAmount }} ج.م</td>
+          <td class="px-5 py-3">
+            <span [class]="getStatusColor(order.status) + ' text-xs px-2 py-0.5 rounded-full'">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </td>
+          <td class="px-5 py-3 text-slate-400 text-xs">
+            {{ order.createdAt | date:'d/M/y' }}
+          </td>
+          <td class="px-5 py-3">
+            <button (click)="viewOrder(order)"
+                    class="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-lg hover:bg-slate-200 transition-all">
+              التفاصيل
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="orders.length === 0">
+          <td colspan="6" class="text-center py-12 text-slate-400 text-sm">
+            مفيش أوردرات لحد دلوقتي
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1"
+         class="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+      <button (click)="prevPage()" [disabled]="page === 1"
+              class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-40 transition-all">
+        السابق
+      </button>
+      <span class="text-xs text-slate-400">{{ page }} / {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="page === totalPages"
+              class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-40 transition-all">
+        التالي
+      </button>
+    </div>
+  </div>
+
+</div>
